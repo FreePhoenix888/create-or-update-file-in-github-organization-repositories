@@ -1,1 +1,1 @@
-export const PACKAGE_NAME = "create-or-update-file-in-github-organization-repositories";
+export const PACKAGE_NAME = "@freephoenix888/create-or-update-file-in-github-organization-repositories";
