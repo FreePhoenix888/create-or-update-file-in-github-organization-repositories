@@ -1,38 +1,30 @@
-async ({ deep, data: { newLink: runLink } }) => {
-  const { Exp } = await import('@deep-foundation/deeplinks/imports/client');
-  const { Link } = await import('@deep-foundation/deeplinks/imports/minilinks');
+import { DeepClient } from '@deep-foundation/deeplinks/imports/client';
+import { Exp } from '@deep-foundation/deeplinks/imports/client';
+import  { Link as LinkWithTypedParameter } from '@deep-foundation/deeplinks/imports/minilinks';
+import { Octokit } from '@octokit/rest';
+type Link = LinkWithTypedParameter<number>
+
+async ({ deep, data: { newLink: runLink } }: {deep: DeepClient, data: {newLink: Link}}) => {
+  const PACKAGE_NAME = "@freephoenix888/create-or-update-file-in-github-organization-repositories"
+  const logs: Array<string> = [];
+
+  main();
   async function main() {
-    const { Octokit } = await import('@octokit/rest');
+    const logger = await getLogger('main');
 
     const config = await getConfig();
+    logger({main})
 
-    // create a personal access token at https://github.com/settings/tokens/new?scopes=repo
     const octokit = new Octokit({
       auth: config.githubApiToken,
     });
-
-    const orgName = 'deep-foundation';
-    const workflowFilename = '.github/workflows/npm-build.yml';
-
-    const workflowFileContent = `
- name: Npm Build
- 
- on:
-   pull_request:
-     types: [opened, reopened, edited, synchronize]
-   workflow_dispatch:
- 
- jobs:
-   main:
-     uses: deep-foundation/workflows/.github/workflows/npm-build.yml@main
- 
- `.trim();
+    logger({octokit})
 
     async function main() {
-      const repos = await octokit.paginate(octokit.rest.repos.listForOrg, {
-        org: orgName,
-        type: 'all',
-      });
+
+      const config = await getConfig();
+
+      const repos = await octokit.paginate(octokit.rest.repos.listForOrg, config.listForOrgOptions);
 
       repos.map(async (repo) => {
         const { data: file } = await octokit.rest.repos
@@ -56,40 +48,29 @@ async ({ deep, data: { newLink: runLink } }) => {
           .createOrUpdateFileContents(params)
           .then(() => {
             console.log(
-              `Successfully created/updated workflow file in ${repo.name}.`
+              `Successfully created/updated file in ${repo.name}.`
             );
           })
           .catch((error) => {
             console.error(
-              `Error creating/updating workflow file in ${repo.name}: ${error}`
+              `Error creating/updating file in ${repo.name}: ${error}`
             );
           });
       });
     }
   }
 
-  async function getGithubApiTokenLink(): Promise<Link> {
-    const exp: Exp = {
-      type_id: {
-        _id: [deep.linkId, 'GithubApiToken'],
-      },
-    };
-    const link = await getLink({
-      exp,
-    });
-    return link;
-  }
-
-  export interface Config {
+  interface Config {
     githubApiToken: string;
-    organizationName: string;
+    organizationLogin: string;
     filePath: string;
     fileContent: string;
     repositoryNamesToIgnore: string[];
+    listForOrgOptions: Parameters<Octokit['repos']['listForOrg']>[0];
   }
 
-  async function getConfigLink() {
-    const exp: Exp = {
+  async function getConfigLink(): Promise<Link> {
+    const exp: Exp<'links'> = {
       id: runLink.from_id,
     };
     const link = await getLink({
@@ -98,7 +79,7 @@ async ({ deep, data: { newLink: runLink } }) => {
     return link;
   }
 
-  async function getConfig() {
+  async function getConfig(): Promise<Config> {
     const link = await getConfigLink();
     const config = await link.value.value;
     if (!config) {
@@ -114,10 +95,11 @@ async ({ deep, data: { newLink: runLink } }) => {
         `Select with exp ${JSON.stringify(param.exp)} did not return a link.`
       );
     }
+    return link
   }
 
   interface GetLinkOrUndefined {
-    exp: Exp;
+    exp: Exp<'links'>;
   }
 
   async function getLinkOrUndefuned(
@@ -129,4 +111,12 @@ async ({ deep, data: { newLink: runLink } }) => {
     } = await deep.select(exp);
     return link;
   }
+
+  async function getLogger(namespace: string) {
+    return (mesasge:any) => {
+      logs.push(`${PACKAGE_NAME}:${namespace}:${mesasge}`);
+    }
+  }
 };
+
+
