@@ -1,0 +1,1 @@
+export const PACKAGE_NAME = "create-or-update-file-in-github-organization-repositories";
