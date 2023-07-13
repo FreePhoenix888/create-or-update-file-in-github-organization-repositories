@@ -1,0 +1,60 @@
+{
+  "package": {
+    "name": "@freephoenix888/create-or-update-file-in-github-organization-repositories",
+    "version": "0.0.1-dev.0"
+  },
+  "data": [
+    {
+      "package": {
+        "dependencyId": 0,
+        "containValue": "SyncTextFile"
+      },
+      "id": 1
+    },
+    {
+      "package": {
+        "dependencyId": 1,
+        "containValue": "TSX"
+      },
+      "id": 2
+    },
+    {
+      "package": {
+        "dependencyId": 0,
+        "containValue": "GeneratedFrom"
+      },
+      "id": 3
+    },
+    {
+      "id": "runInsertHandlerCodeGenerated",
+      "type": 1,
+      "value": {
+        "value": "var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {\n    if (k2 === undefined) k2 = k;\n    var desc = Object.getOwnPropertyDescriptor(m, k);\n    if (!desc || (\"get\" in desc ? !m.__esModule : desc.writable || desc.configurable)) {\n      desc = { enumerable: true, get: function() { return m[k]; } };\n    }\n    Object.defineProperty(o, k2, desc);\n}) : (function(o, m, k, k2) {\n    if (k2 === undefined) k2 = k;\n    o[k2] = m[k];\n}));\nvar __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {\n    Object.defineProperty(o, \"default\", { enumerable: true, value: v });\n}) : function(o, v) {\n    o[\"default\"] = v;\n});\nvar __importStar = (this && this.__importStar) || function (mod) {\n    if (mod && mod.__esModule) return mod;\n    var result = {};\n    if (mod != null) for (var k in mod) if (k !== \"default\" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);\n    __setModuleDefault(result, mod);\n    return result;\n};\nvar __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {\n    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }\n    return new (P || (P = Promise))(function (resolve, reject) {\n        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }\n        function rejected(value) { try { step(generator[\"throw\"](value)); } catch (e) { reject(e); } }\n        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }\n        step((generator = generator.apply(thisArg, _arguments || [])).next());\n    });\n};\n({ deep, data: { newLink: runLink } }) => __awaiter(void 0, void 0, void 0, function* () {\n    const { Exp } = yield Promise.resolve().then(() => __importStar(require('@deep-foundation/deeplinks/imports/client')));\n    const { Link } = yield Promise.resolve().then(() => __importStar(require('@deep-foundation/deeplinks/imports/minilinks')));\n    function main() {\n        return __awaiter(this, void 0, void 0, function* () {\n            const { Octokit } = yield Promise.resolve().then(() => __importStar(require('@octokit/rest')));\n            const config = yield getConfig();\n            const octokit = new Octokit({\n                auth: config.githubApiToken,\n            });\n            const orgName = 'deep-foundation';\n            const workflowFilename = '.github/workflows/npm-build.yml';\n            const workflowFileContent = `\n name: Npm Build\n \n on:\n   pull_request:\n     types: [opened, reopened, edited, synchronize]\n   workflow_dispatch:\n \n jobs:\n   main:\n     uses: deep-foundation/workflows/.github/workflows/npm-build.yml@main\n \n `.trim();\n            function main() {\n                return __awaiter(this, void 0, void 0, function* () {\n                    const repos = yield octokit.paginate(octokit.rest.repos.listForOrg, {\n                        org: orgName,\n                        type: 'all',\n                    });\n                    repos.map((repo) => __awaiter(this, void 0, void 0, function* () {\n                        const { data: file } = yield octokit.rest.repos\n                            .getContent({\n                            owner: orgName,\n                            repo: repo.name,\n                            path: workflowFilename,\n                        })\n                            .catch(() => ({}));\n                        const params = Object.assign({ owner: orgName, repo: repo.name, path: workflowFilename, message: `Add/update workflow file ${workflowFilename}`, content: Buffer.from(workflowFileContent).toString('base64') }, (file && { sha: file.sha }));\n                        yield octokit.rest.repos\n                            .createOrUpdateFileContents(params)\n                            .then(() => {\n                            console.log(`Successfully created/updated workflow file in ${repo.name}.`);\n                        })\n                            .catch((error) => {\n                            console.error(`Error creating/updating workflow file in ${repo.name}: ${error}`);\n                        });\n                    }));\n                });\n            }\n        });\n    }\n    function getGithubApiTokenLink() {\n        return __awaiter(this, void 0, void 0, function* () {\n            const exp = {\n                type_id: {\n                    _id: [deep.linkId, 'GithubApiToken'],\n                },\n            };\n            const link = yield getLink({\n                exp,\n            });\n            return link;\n        });\n    }\n    function getConfigLink() {\n        return __awaiter(this, void 0, void 0, function* () {\n            const exp = {\n                id: runLink.from_id,\n            };\n            const link = yield getLink({\n                exp,\n            });\n            return link;\n        });\n    }\n    function getConfig() {\n        return __awaiter(this, void 0, void 0, function* () {\n            const link = yield getConfigLink();\n            const config = yield link.value.value;\n            if (!config) {\n                throw new Error(`##${link.id} must have a value`);\n            }\n            return config;\n        });\n    }\n    function getLink(param) {\n        return __awaiter(this, void 0, void 0, function* () {\n            const link = yield getLinkOrUndefuned(param);\n            if (!link) {\n                throw new Error(`Select with exp ${JSON.stringify(param.exp)} did not return a link.`);\n            }\n        });\n    }\n    function getLinkOrUndefuned(param) {\n        return __awaiter(this, void 0, void 0, function* () {\n            const { exp } = param;\n            const { data: [link], } = yield deep.select(exp);\n            return link;\n        });\n    }\n});\n//# sourceMappingURL=module.js.map"
+      }
+    },
+    {
+      "id": "runInsertHandlerCode",
+      "type": 2,
+      "value": {
+        "value": "async ({ deep, data: { newLink: runLink } }) => {\n  const { Exp } = await import('@deep-foundation/deeplinks/imports/client');\n  const { Link } = await import('@deep-foundation/deeplinks/imports/minilinks');\n  async function main() {\n    const { Octokit } = await import('@octokit/rest');\n\n    const config = await getConfig();\n\n    // create a personal access token at https://github.com/settings/tokens/new?scopes=repo\n    const octokit = new Octokit({\n      auth: config.githubApiToken,\n    });\n\n    const orgName = 'deep-foundation';\n    const workflowFilename = '.github/workflows/npm-build.yml';\n\n    const workflowFileContent = `\n name: Npm Build\n \n on:\n   pull_request:\n     types: [opened, reopened, edited, synchronize]\n   workflow_dispatch:\n \n jobs:\n   main:\n     uses: deep-foundation/workflows/.github/workflows/npm-build.yml@main\n \n `.trim();\n\n    async function main() {\n      const repos = await octokit.paginate(octokit.rest.repos.listForOrg, {\n        org: orgName,\n        type: 'all',\n      });\n\n      repos.map(async (repo) => {\n        const { data: file } = await octokit.rest.repos\n          .getContent({\n            owner: orgName,\n            repo: repo.name,\n            path: workflowFilename,\n          })\n          .catch(() => ({})); // if file does not exist, continue\n\n        const params = {\n          owner: orgName,\n          repo: repo.name,\n          path: workflowFilename,\n          message: `Add/update workflow file ${workflowFilename}`,\n          content: Buffer.from(workflowFileContent).toString('base64'),\n          ...(file && { sha: file.sha }), // if file exists, include sha to update\n        };\n\n        await octokit.rest.repos\n          .createOrUpdateFileContents(params)\n          .then(() => {\n            console.log(\n              `Successfully created/updated workflow file in ${repo.name}.`\n            );\n          })\n          .catch((error) => {\n            console.error(\n              `Error creating/updating workflow file in ${repo.name}: ${error}`\n            );\n          });\n      });\n    }\n  }\n\n  async function getGithubApiTokenLink(): Promise<Link> {\n    const exp: Exp = {\n      type_id: {\n        _id: [deep.linkId, 'GithubApiToken'],\n      },\n    };\n    const link = await getLink({\n      exp,\n    });\n    return link;\n  }\n\n  export interface Config {\n    githubApiToken: string;\n    organizationName: string;\n    filePath: string;\n    fileContent: string;\n    repositoryNamesToIgnore: string[];\n  }\n\n  async function getConfigLink() {\n    const exp: Exp = {\n      id: runLink.from_id,\n    };\n    const link = await getLink({\n      exp,\n    });\n    return link;\n  }\n\n  async function getConfig() {\n    const link = await getConfigLink();\n    const config = await link.value.value;\n    if (!config) {\n      throw new Error(`##${link.id} must have a value`);\n    }\n    return config;\n  }\n\n  async function getLink(param: GetLinkOrUndefined): Promise<Link> {\n    const link = await getLinkOrUndefuned(param);\n    if (!link) {\n      throw new Error(\n        `Select with exp ${JSON.stringify(param.exp)} did not return a link.`\n      );\n    }\n  }\n\n  interface GetLinkOrUndefined {\n    exp: Exp;\n  }\n\n  async function getLinkOrUndefuned(\n    param: GetLinkOrUndefined\n  ): Promise<Link | undefined> {\n    const { exp } = param;\n    const {\n      data: [link],\n    } = await deep.select(exp);\n    return link;\n  }\n};\n"
+      }
+    },
+    {
+      "id": "runInsertHandlerCodeGeneratedFrom",
+      "type": 3,
+      "from": "runInsertHandlerCodeGenerated",
+      "to": "runInsertHandlerCode"
+    }
+  ],
+  "errors": [],
+  "dependencies": [
+    {
+      "name": "@deep-foundation/core",
+      "version": "0.0.2"
+    },
+    {
+      "name": "@deep-foundation/tsx",
+      "version": "0.0.3"
+    }
+  ]
+}
